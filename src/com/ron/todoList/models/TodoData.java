@@ -1,6 +1,8 @@
 package com.ron.todoList.models;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -10,14 +12,13 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
-import java.util.List;
 
 // singleton
 public class TodoData implements Dao {
     private static final TodoData instance = new TodoData();
     private static final String filePath = "data.txt";
 
-    private List<TodoItem> todoItems;
+    private ObservableList<TodoItem> todoItems; // use observable for binding data
     private final DateTimeFormatter formatter;
 
     private TodoData() {
@@ -28,14 +29,14 @@ public class TodoData implements Dao {
         return instance;
     }
 
-    public List<TodoItem> getTodoItems() {
+    public ObservableList<TodoItem> getTodoItems() {
         return todoItems;
     }
 
     // load data from file
     @Override
     public void loadTodoItems() throws IOException {
-        todoItems = FXCollections.observableArrayList();
+        todoItems = FXCollections.observableArrayList(); // FXCollection is for better performance
         Path path = Paths.get(filePath);
         BufferedReader br = Files.newBufferedReader(path);
         String input;
@@ -78,5 +79,9 @@ public class TodoData implements Dao {
                 bw.close();
             }
         }
+    }
+
+    public void addTodoItem(TodoItem newItem) {
+        todoItems.add(newItem);
     }
 }

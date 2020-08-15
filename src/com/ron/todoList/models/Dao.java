@@ -7,4 +7,5 @@ public interface Dao {
     void loadTodoItems() throws IOException;
 
     void storeTodoItems() throws IOException;
+
 }
