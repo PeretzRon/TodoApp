@@ -8,4 +8,10 @@ public interface Dao {
 
     void storeTodoItems() throws IOException;
 
+    void addNewItem(TodoItem item);
+
+    void deleteItem(TodoItem item);
+
+    void editItem(TodoItem item);
+
 }

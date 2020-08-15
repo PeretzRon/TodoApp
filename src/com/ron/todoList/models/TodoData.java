@@ -12,6 +12,8 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
+import java.util.Objects;
+import java.util.stream.IntStream;
 
 // singleton
 public class TodoData implements Dao {
@@ -47,9 +49,10 @@ public class TodoData implements Dao {
                 String shortDescription = data[0];
                 String description = data[1];
                 String dateString = data[2];
+                String id = data[3];
 
                 LocalDate itemDateExpire = LocalDate.parse(dateString, formatter);
-                todoItems.add(new TodoItem(shortDescription, description, itemDateExpire));
+                todoItems.add(new TodoItem(shortDescription, description, itemDateExpire, id));
             }
 
         } finally {
@@ -68,10 +71,11 @@ public class TodoData implements Dao {
             Iterator<TodoItem> iterator = todoItems.iterator();
             while (iterator.hasNext()) {
                 TodoItem todoItem = iterator.next();
-                bw.write(String.format("%s\t%s\t%s\t",
+                bw.write(String.format("%s\t%s\t%s\t%s\t",
                         todoItem.getShortDescription(),
                         todoItem.getDescription(),
-                        todoItem.getExpireDate().format(formatter)));
+                        todoItem.getExpireDate().format(formatter),
+                        todoItem.getId()));
                 bw.newLine();
             }
         } finally {
@@ -81,7 +85,24 @@ public class TodoData implements Dao {
         }
     }
 
-    public void addTodoItem(TodoItem newItem) {
-        todoItems.add(newItem);
+    @Override
+    public void addNewItem(TodoItem item) {
+        todoItems.add(item);
     }
+
+    @Override
+    public void deleteItem(TodoItem item) {
+        todoItems.remove(item);
+    }
+
+    @Override
+    public void editItem(TodoItem item) {
+        for (int i = 0; i < todoItems.size(); i++) {
+            if (todoItems.get(i).getId().equals(item.getId())) {
+                todoItems.set(i, item);
+                break;
+            }
+        }
+    }
+
 }

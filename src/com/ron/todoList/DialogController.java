@@ -20,13 +20,37 @@ public class DialogController {
     @FXML
     private DatePicker deadlinePicker;
 
-    public TodoItem processResults() {
+    private String id;
+
+    public TextField getShortDescriptionField() {
+        return shortDescriptionField;
+    }
+
+    public TextArea getDetailsArea() {
+        return detailsArea;
+    }
+
+    public DatePicker getDeadlinePicker() {
+        return deadlinePicker;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public TodoItem processResults(Boolean isEdit) {
         String shortDescription = shortDescriptionField.getText().trim();
         String details = detailsArea.getText().trim();
         LocalDate deadlineValue = deadlinePicker.getValue();
 
-        TodoItem newItem = new TodoItem(shortDescription, details, deadlineValue);
-        TodoData.getInstance().addTodoItem(newItem);
-        return newItem;
+        TodoItem item;
+        if (!isEdit) {
+            item = new TodoItem(shortDescription, details, deadlineValue);
+            TodoData.getInstance().addNewItem(item);
+        } else {
+            item = new TodoItem(shortDescription, details, deadlineValue, id);
+            TodoData.getInstance().editItem(item);
+        }
+        return item;
     }
 }

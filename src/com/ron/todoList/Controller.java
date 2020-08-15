@@ -9,19 +9,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class Controller {
-
-    private List<TodoItem> todoItems;
 
     @FXML
     private ListView<TodoItem> todoListView;
@@ -35,7 +29,25 @@ public class Controller {
     @FXML
     private BorderPane mainBorderPane;
 
+    @FXML
+    private ContextMenu listContextMenu;
+
     public void initialize() {
+
+        listContextMenu = new ContextMenu();
+        MenuItem deleteMenuItem = new MenuItem("Delete");
+        MenuItem editMenuItem = new MenuItem("Edit");
+        deleteMenuItem.setOnAction(actionEvent -> {
+            TodoItem item = todoListView.getSelectionModel().getSelectedItem();
+            deleteItem(item);
+        });
+        editMenuItem.setOnAction(actionEvent -> {
+            TodoItem item = todoListView.getSelectionModel().getSelectedItem();
+            editItem(item);
+        });
+        listContextMenu.getItems().addAll(deleteMenuItem);
+        listContextMenu.getItems().addAll(editMenuItem);
+
 
         // eventListener click on item -> load the data to textArea and expire date label
         todoListView.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
@@ -64,10 +76,22 @@ public class Controller {
                         if (item.getExpireDate().isBefore(LocalDate.now())) {
                             // set color red for items that their date is pass
                             setTextFill(Color.RED);
+                        } else {
+                            setTextFill(Color.BLACK);
                         }
                     }
                 }
             };
+
+            cell.emptyProperty().addListener(
+                    (obs, wasEmpty, isNowEmpty) -> {
+                        if (isNowEmpty) {
+                            cell.setContextMenu(null);
+                        } else {
+                            cell.setContextMenu(listContextMenu);
+                        }
+
+                    });
             return cell;
         });
 
@@ -75,14 +99,32 @@ public class Controller {
 
     @FXML
     public void showNewItemDialog() {
+        addEditItemDialog(false, null);
+    }
+
+    private void editItem(TodoItem item) {
+        addEditItemDialog(true, item);
+    }
+
+    private void deleteItem(TodoItem item) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Delete Todo Item");
+        alert.setHeaderText("Delete item: " + item.getShortDescription());
+        alert.setContentText("Are you sure?  Press OK to confirm, or cancel to Back out.");
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && (result.get() == ButtonType.OK)) {
+            TodoData.getInstance().deleteItem(item);
+        }
+    }
+
+    private void addEditItemDialog(boolean isEdit, TodoItem item) {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.initOwner(mainBorderPane.getScene().getWindow());
-        dialog.setTitle("Add New Todo Item");
+        dialog.setTitle(isEdit ? "Edit Item: " + item.getShortDescription() : "Add New Todo Item");
         FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(getClass().getResource("todoItemDialog.fxml")); // load dialog (add item) window
         try {
             dialog.getDialogPane().setContent(fxmlLoader.load());
-
         } catch (IOException e) {
             System.out.println("Couldn't load the dialog");
             e.printStackTrace();
@@ -92,11 +134,18 @@ public class Controller {
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
 
+        DialogController controller = fxmlLoader.getController();
+        if (isEdit) {
+            controller.getShortDescriptionField().setText(item.getShortDescription());
+            controller.getDetailsArea().setText(item.getDescription());
+            controller.getDeadlinePicker().setValue(item.getExpireDate());
+            controller.setId(item.getId());
+        }
+
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             // user press OK
-            DialogController controller = fxmlLoader.getController();
-            TodoItem newItem = controller.processResults();
+            TodoItem newItem = controller.processResults(isEdit);
             todoListView.getSelectionModel().select(newItem);
         }
     }

@@ -12,7 +12,7 @@ import java.io.IOException;
 public class Main extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("main.fxml"));
         primaryStage.setTitle("Todo");
         primaryStage.setScene(new Scene(root, 700, 500));
@@ -24,7 +24,7 @@ public class Main extends Application {
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         try {
             TodoData.getInstance().storeTodoItems();
         } catch (IOException e) {
@@ -33,7 +33,7 @@ public class Main extends Application {
     }
 
     @Override
-    public void init() throws Exception {
+    public void init() {
         try {
             TodoData.getInstance().loadTodoItems();
         } catch (IOException e) {
