@@ -2,10 +2,14 @@ package com.ron.todoList;
 
 import com.ron.todoList.models.TodoData;
 import com.ron.todoList.models.TodoItem;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -48,6 +52,25 @@ public class Controller {
         todoListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE); // user can select only one
         todoListView.getSelectionModel().selectFirst(); // when load first time show the first item
 
+        todoListView.setCellFactory(todoItemListView -> {
+            ListCell<TodoItem> cell = new ListCell<>() {
+                @Override
+                protected void updateItem(TodoItem item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty) {
+                        setText(null);
+                    } else {
+                        setText(item.getShortDescription());
+                        if (item.getExpireDate().isBefore(LocalDate.now())) {
+                            // set color red for items that their date is pass
+                            setTextFill(Color.RED);
+                        }
+                    }
+                }
+            };
+            return cell;
+        });
+
     }
 
     @FXML
@@ -76,9 +99,10 @@ public class Controller {
             TodoItem newItem = controller.processResults();
             todoListView.getSelectionModel().select(newItem);
         }
-
-
     }
 
-
+    @FXML
+    public void onExitHandler(ActionEvent actionEvent) {
+        Platform.exit();
+    }
 }
