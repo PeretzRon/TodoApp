@@ -7,6 +7,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 
@@ -153,5 +155,15 @@ public class Controller {
     @FXML
     public void onExitHandler(ActionEvent actionEvent) {
         Platform.exit();
+    }
+
+    @FXML
+    public void handleKeyPressed(KeyEvent keyEvent) {
+        TodoItem item = todoListView.getSelectionModel().getSelectedItem();
+        if (item != null) {
+            if( keyEvent.getCode().equals(KeyCode.DELETE)){
+                deleteItem(item);
+            }
+        }
     }
 }
